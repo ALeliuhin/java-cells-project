@@ -15,13 +15,13 @@ interface IsCell {
     void synthesizeProtein();
 }
 
-// Interface for plant cells
+// ClientInterface for plant cells
 interface IsPlantCell extends IsCell {
     void performPhotosynthesis();
     void storeStarch();
 }
 
-// Interface for animal cells
+// ClientInterface for animal cells
 interface IsAnimalCell extends IsCell {
     void maintainHomeostasis();
 }

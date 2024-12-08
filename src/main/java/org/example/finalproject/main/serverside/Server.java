@@ -13,7 +13,6 @@ public class Server {
 
     private ServerSocket serverSocket;
 
-
     public Server(ServerSocket serverSocket) {
         this.serverSocket = serverSocket;
     }
@@ -46,10 +45,12 @@ public class Server {
 
     public static void main(String[] args) throws IOException {
 
-    // Create socket
+    // Initialize connection to DB
 
-        DatabaseManager databaseManager = new DatabaseManager();
-        databaseManager.getConnection();
+        ManagerDatabase managerDatabase = new ManagerDatabase();
+        managerDatabase.getConnection();
+
+    // Create server socket
 
         ServerSocket serverSocket1 = new ServerSocket(PORT);
         Server server = new Server(serverSocket1);

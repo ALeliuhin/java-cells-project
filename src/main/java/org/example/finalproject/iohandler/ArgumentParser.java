@@ -1,12 +1,14 @@
 package org.example.finalproject.iohandler;
 
 import io.github.cdimascio.dotenv.Dotenv;
+import org.example.finalproject.main.AdminInterface;
+import org.example.finalproject.main.ClientInterface;
+import org.example.finalproject.main.UserInterface;
 import org.example.finalproject.main.exceptions.FileNameAlreadyExists;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Scanner;
-import org.example.finalproject.main.Interface;
 
 public class ArgumentParser {
 
@@ -27,7 +29,7 @@ public class ArgumentParser {
                 case HELP_OPT:
                     displayHelp();
                     break;
-
+//
                 case LOGIN_OPT:
                     handleLoginOption(args);
                     break;
@@ -43,6 +45,8 @@ public class ArgumentParser {
         } catch (ArrayIndexOutOfBoundsException e) {
             OutputDevice.writeMessage("Missing argument for option " + args.get(0) + "\n");
             System.exit(-1);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -54,7 +58,7 @@ public class ArgumentParser {
                 "--help -> provides documentation\n\n");
     }
 
-    private void handleLoginOption(List<String> args) throws FileNameAlreadyExists {
+    private void handleLoginOption(List<String> args) throws FileNameAlreadyExists, IOException {
         if (args.size() < 2 || (!args.get(1).equals("user") && !args.get(1).equals("admin"))) {
             OutputDevice.writeMessage("Invalid or missing role for " + LOGIN_OPT + " option.\n");
             System.exit(-1);
@@ -70,7 +74,7 @@ public class ArgumentParser {
             }
         }
 
-        startInterface(role.equals("user") ? new Interface.UserInterface() : new Interface.AdminInterface(), filePath);
+        startInterface(role.equals("user") ? new UserInterface() : new AdminInterface());
     }
 
     private boolean verifyAdminPassword() {
@@ -82,7 +86,7 @@ public class ArgumentParser {
         return inputPassword.equals(envPassword);
     }
 
-    private void handleOpenOption(List<String> args) throws FileNameAlreadyExists {
+    private void handleOpenOption(List<String> args) throws FileNameAlreadyExists, IOException {
         if (args.size() < 4 || !args.get(2).equals(LOGIN_OPT) || (!args.get(3).equals("user") && !args.get(3).equals("admin"))) {
             OutputDevice.writeMessage("Invalid arguments for " + OPEN_OPT + " option. Use <--help> for usage information.\n");
             System.exit(-1);
@@ -100,26 +104,14 @@ public class ArgumentParser {
             System.exit(-1);
         }
 
-        startInterface(role.equals("user") ? new Interface.UserInterface() : new Interface.AdminInterface(), filePath);
+        startInterface(role.equals("user") ? new UserInterface() : new AdminInterface());
     }
 
-    private void startInterface(Object interfaceInstance, String filePath) {
-        File file = new File(filePath);
-
-        if (!file.exists()) {
-            try {
-                file.createNewFile();
-                OutputDevice.writeMessage("File created: " + filePath + "\n");
-            } catch (IOException e) {
-                OutputDevice.writeMessage("Error creating file at " + filePath + "\n");
-                System.exit(-1);
-            }
-        }
-
-        if (interfaceInstance instanceof Interface.UserInterface) {
-            ((Interface.UserInterface) interfaceInstance).start(filePath);
-        } else if (interfaceInstance instanceof Interface.AdminInterface) {
-            ((Interface.AdminInterface) interfaceInstance).start(filePath);
+    private void startInterface(Object interfaceInstance) {
+        if (interfaceInstance instanceof UserInterface) {
+            ((UserInterface) interfaceInstance).start();
+        } else if (interfaceInstance instanceof AdminInterface) {
+            ((AdminInterface) interfaceInstance).start();
         }
     }
 }
