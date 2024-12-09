@@ -19,6 +19,9 @@ public class ClientHandler implements Runnable{
             this.bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             this.userRole = bufferedReader.readLine();
             clientHandlers.add(this);
+            bufferedWriter.write("200");
+            bufferedWriter.newLine();
+            bufferedWriter.flush();
         }
         catch (Exception e){
             System.err.println("Error creating client handler");
@@ -52,11 +55,16 @@ public class ClientHandler implements Runnable{
         while(socket.isConnected()){
             try{
                 messageFromClient = bufferedReader.readLine();
-                if (messageFromClient.equals("Test message")) {
+                if (messageFromClient != null && messageFromClient.equals("Test message")) {
                     System.out.println("User accepted connection.");
                     bufferedWriter.write("200"); // Respond with 200 on success
                     bufferedWriter.newLine();
                     bufferedWriter.flush();
+                } else if (messageFromClient == null) {
+                    // Handle client disconnection
+                    System.out.println("Client disconnected.");
+                    closeEverything(socket, bufferedReader, bufferedWriter);
+                    break;
                 }
                 // parse OP and content
                 // decide how to response
