@@ -1,8 +1,14 @@
 package org.example.finalproject.main.serverside;
 
+import org.example.finalproject.cells.AnimalCell;
+import org.example.finalproject.cells.Cell;
+import org.example.finalproject.cells.PlantCell;
+
 import java.io.*;
 import java.net.Socket;
+import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.List;
 
 public class ClientHandler implements Runnable{
 
@@ -10,13 +16,19 @@ public class ClientHandler implements Runnable{
     private Socket socket;
     private BufferedReader bufferedReader;
     private BufferedWriter bufferedWriter;
+    private ObjectOutputStream objectOutputStream;
+    private ObjectInputStream objectInputStream;
     private String userRole;
+    Connection connectionToDb;
 
     public ClientHandler(Socket socket){
         try{
             this.socket = socket;
             this.bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
             this.bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            this.objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
+            this.objectInputStream = new ObjectInputStream(socket.getInputStream());
+            connectionToDb = new ManagerDatabase().getConnection();
             this.userRole = bufferedReader.readLine();
             clientHandlers.add(this);
             bufferedWriter.write("200");
@@ -44,6 +56,9 @@ public class ClientHandler implements Runnable{
             if (socket != null){
                 socket.close();
             }
+//            if(connection != null){
+//                ManagerDatabase.closeConnection(connection);
+//            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -55,15 +70,16 @@ public class ClientHandler implements Runnable{
         while(socket.isConnected()){
             try{
                 messageFromClient = bufferedReader.readLine();
-                if (messageFromClient != null && messageFromClient.equals("Test message")) {
-                    System.out.println("User accepted connection.");
-                    bufferedWriter.write("200"); // Respond with 200 on success
-                    bufferedWriter.newLine();
-                    bufferedWriter.flush();
+                if (messageFromClient != null && messageFromClient.equals("/inspect")) {
+                    System.out.println("User /inspect request.");
+                    List<Cell> cells = ManagerDatabase.getCells(connectionToDb);
+                    objectOutputStream.writeObject(cells);
+                    objectOutputStream.flush();
                 } else if (messageFromClient == null) {
                     // Handle client disconnection
                     System.out.println("Client disconnected.");
                     closeEverything(socket, bufferedReader, bufferedWriter);
+                    ManagerDatabase.closeConnection(connectionToDb);
                     break;
                 }
                 // parse OP and content

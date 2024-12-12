@@ -5,6 +5,8 @@ import org.example.finalproject.main.AdminInterface;
 import org.example.finalproject.main.ClientInterface;
 import org.example.finalproject.main.UserInterface;
 import org.example.finalproject.main.exceptions.FileNameAlreadyExists;
+import org.example.finalproject.main.exceptions.ServerUnreached;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -46,7 +48,7 @@ public class ArgumentParser {
             OutputDevice.writeMessage("Missing argument for option " + args.get(0) + "\n");
             System.exit(-1);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new ServerUnreached("Server unreachable");
         }
     }
 

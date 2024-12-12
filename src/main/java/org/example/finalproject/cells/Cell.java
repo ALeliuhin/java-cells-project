@@ -1,6 +1,9 @@
 package org.example.finalproject.cells;
 
-abstract public class Cell {
+import java.io.Serializable;
+
+
+abstract public class Cell implements Serializable{
     public Organelles.Nucleolus nucleolus;
     public Organelles.Ribosome ribosomes;
     public Organelles.Mitochondria mitochondria;
