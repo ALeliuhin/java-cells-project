@@ -150,8 +150,8 @@ public class AdminInterface extends ClientInterface{
 
     public void inspectCellsScene(List<Cell> cells) {
         // Set up the new stage
-        adminWindow = new Stage();
-        adminWindow.setTitle("Retrieved Cells");
+        Stage inspectWindow = new Stage();
+        inspectWindow.setTitle("Retrieved Cells");
 
         // Create a VBox to hold cell information
         VBox cellListVBox = new VBox();
@@ -209,7 +209,7 @@ public class AdminInterface extends ClientInterface{
         Button backButton = new Button("Back");
         backButton.setFont(Font.font("Montserrat", FontWeight.NORMAL, 16));
         backButton.setStyle("-fx-text-fill: #ffffff; -fx-background-color: #4e59c2; -fx-padding: 10; -fx-border-radius: 5; -fx-background-radius: 5; -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 8, 0, 0, 2);");
-        backButton.setOnAction(e -> adminWindow.close());
+        backButton.setOnAction(e -> inspectWindow.close());
 
         // Layout for the Back button and ScrollPane
         VBox layout = new VBox();
@@ -223,8 +223,8 @@ public class AdminInterface extends ClientInterface{
         scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/org/example/finalproject/Global.css")).toExternalForm());
 
         // Set the scene and show the stage
-        adminWindow.setScene(scene);
-        adminWindow.show();
+        inspectWindow.setScene(scene);
+        inspectWindow.show();
     }
 
     public void createCells() {
@@ -256,17 +256,33 @@ public class AdminInterface extends ClientInterface{
             try {
                 String input = inputField.getText();
 
+                // Validate that the input is a valid integer
+                int numCells;
+                try {
+                    numCells = Integer.parseInt(input);
+                    if (numCells <= 0) {
+                        throw new NumberFormatException();
+                    }
+                } catch (NumberFormatException e) {
+                    // Show an error alert for invalid input
+                    Alert errorAlert = new Alert(Alert.AlertType.ERROR);
+                    errorAlert.setTitle("Invalid Input");
+                    errorAlert.setHeaderText(null);
+                    errorAlert.setContentText("Please enter a valid positive integer.");
+                    errorAlert.showAndWait();
+                    return;
+                }
+
                 // Send the number of cells to the server
                 bufferedWriter.write("/synthesize");
                 bufferedWriter.newLine();
                 bufferedWriter.flush();
 
-                if(bufferedReader.readLine().equals("200")){
+                if(bufferedReader.readLine().equals("200")) {
                     bufferedWriter.write(input);
                     bufferedWriter.newLine();
                     bufferedWriter.flush();
-                }
-                else{
+                } else {
                     errorScene();
                 }
 
@@ -275,12 +291,6 @@ public class AdminInterface extends ClientInterface{
                 successAlert.setHeaderText(null);
                 successAlert.setContentText("Successfully synthesized " + input + " cells!");
                 successAlert.showAndWait();
-            } catch (NumberFormatException e) {
-                Alert errorAlert = new Alert(Alert.AlertType.ERROR);
-                errorAlert.setTitle("Invalid Input");
-                errorAlert.setHeaderText(null);
-                errorAlert.setContentText("Please enter a valid number.");
-                errorAlert.showAndWait();
             } catch (IOException e) {
                 e.printStackTrace();
                 Alert errorAlert = new Alert(Alert.AlertType.ERROR);
@@ -290,6 +300,7 @@ public class AdminInterface extends ClientInterface{
                 errorAlert.showAndWait();
             }
         });
+
 
         // Create the Back button
         Button backButton = new Button("Back");

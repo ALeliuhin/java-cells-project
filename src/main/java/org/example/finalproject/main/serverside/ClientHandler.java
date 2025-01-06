@@ -59,9 +59,6 @@ public class ClientHandler implements Runnable{
             if (socket != null){
                 socket.close();
             }
-//            if(connection != null){
-//                ManagerDatabase.closeConnection(connection);
-//            }
         } catch (IOException e) {
             e.printStackTrace();
         }
