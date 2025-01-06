@@ -9,6 +9,52 @@ public class InputDevice {
     private InputStream inputStream;
     private Scanner scanner;
 
+    static String[] animals = {
+            "Lion",
+            "Elephant",
+            "Tiger",
+            "Bear",
+            "Wolf",
+            "Giraffe",
+            "Zebra",
+            "Kangaroo",
+            "Panda",
+            "Leopard",
+            "Cheetah",
+            "Rhinoceros",
+            "Hippopotamus",
+            "Fox",
+            "Rabbit",
+            "Deer",
+            "Moose",
+            "Eagle",
+            "Owl",
+            "Shark"
+    };
+
+    static String[] plants = {
+            "Rose",
+            "Sunflower",
+            "Tulip",
+            "Oak",
+            "Pine",
+            "Maple",
+            "Cactus",
+            "Bamboo",
+            "Fern",
+            "Moss",
+            "Lavender",
+            "Daffodil",
+            "Hibiscus",
+            "Lotus",
+            "Aloe Vera",
+            "Daisy",
+            "Ivy",
+            "Cherry Blossom",
+            "Palm Tree",
+            "Orchid"
+    };
+
     public InputDevice(InputStream inputStream) {
         this.inputStream = inputStream;
         this.scanner = new Scanner(inputStream);
@@ -38,7 +84,6 @@ public class InputDevice {
         }
     }
 
-
     public String nextLine() throws IOException {
         StringBuilder sb = new StringBuilder();
         int n = inputStream.read();
@@ -55,6 +100,15 @@ public class InputDevice {
 
     public static double yieldDoubleNumber(double bound1, double bound2) {
         return new Random().nextDouble(bound1, bound2 + 1);
+    }
+
+    public static String getRandomAnimal() {
+        return animals[new Random().nextInt(animals.length)]; // Return the animal at the random index
+    }
+
+    // Function to randomly pick a plant
+    public static String getRandomPlant() {
+        return plants[new Random().nextInt(plants.length)]; // Return the plant at the random index
     }
 
     public void close() {

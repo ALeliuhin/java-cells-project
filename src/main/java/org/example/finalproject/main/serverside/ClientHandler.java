@@ -3,12 +3,15 @@ package org.example.finalproject.main.serverside;
 import org.example.finalproject.cells.AnimalCell;
 import org.example.finalproject.cells.Cell;
 import org.example.finalproject.cells.PlantCell;
+import org.example.finalproject.iohandler.InputDevice;
 
 import java.io.*;
 import java.net.Socket;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+
 
 public class ClientHandler implements Runnable{
 
@@ -75,7 +78,27 @@ public class ClientHandler implements Runnable{
                     List<Cell> cells = ManagerDatabase.getCells(connectionToDb);
                     objectOutputStream.writeObject(cells);
                     objectOutputStream.flush();
-                } else if (messageFromClient == null) {
+                }
+                else if(messageFromClient != null && messageFromClient.equals("/synthesize")){
+                    bufferedWriter.write("200");
+                    bufferedWriter.newLine();
+                    bufferedWriter.flush();
+
+                    int numberOfCells = Integer.parseInt(bufferedReader.readLine());
+                    List<Cell> cells = new ArrayList<>();
+                    for (int i = 0; i < numberOfCells; i++) {
+                        if(i % 2 == 0){
+                            AnimalCell animalCell = new AnimalCell(InputDevice.getRandomAnimal(), InputDevice.yieldIntNumber(8, 100));
+                            cells.add(animalCell);
+                        }
+                        else {
+                            PlantCell plantCell = new PlantCell(InputDevice.getRandomPlant(), InputDevice.yieldIntNumber(14, 100));
+                            cells.add(plantCell);
+                        }
+                    }
+                    ManagerDatabase.insertCells(connectionToDb, cells);
+                }
+                else if (messageFromClient == null) {
                     // Handle client disconnection
                     System.out.println("Client disconnected.");
                     closeEverything(socket, bufferedReader, bufferedWriter);
@@ -88,6 +111,8 @@ public class ClientHandler implements Runnable{
             catch (IOException e) {
                 closeEverything(socket, bufferedReader, bufferedWriter);
                 break;
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
             }
         }
     }

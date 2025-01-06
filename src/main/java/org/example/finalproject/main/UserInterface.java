@@ -24,7 +24,7 @@ import java.util.Objects;
 
 public class UserInterface extends ClientInterface{
     private Stage userWindow;
-    private Scene userMainScene, userInspectCellsScene, userPlayGameScene;
+    private Scene userMainScene;
 
     public UserInterface() throws IOException {
         super(new Socket("localhost", Integer.parseInt(Dotenv.load().get("PORT"))), "user");
@@ -35,11 +35,6 @@ public class UserInterface extends ClientInterface{
 
             if(bufferedReader.readLine().equals("200")){
                 welcomeScene();
-            }
-            else{
-                closeEverything(socket, bufferedReader, bufferedWriter);
-                errorScene();
-                throw new ServerUnreached("Server unreachable.");
             }
 
         } catch (IOException e) {

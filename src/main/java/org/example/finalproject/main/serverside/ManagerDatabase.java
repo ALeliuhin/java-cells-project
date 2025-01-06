@@ -25,7 +25,7 @@ public class ManagerDatabase {
     private static final String INSERT_INTO_CENTROSOME_QUERY = "INSERT INTO centrosome (number_centrosomes) VALUES (?) RETURNING centrosome_id";
     private static final String INSERT_INTO_CHLOROPLAST_QUERY = "INSERT INTO chloroplast (number_chloroplasts) VALUES (?) RETURNING chloroplast_id";
     private static final String INSERT_INTO_TYPES_QUERY = "INSERT INTO types (type_name) VALUES (?) ON CONFLICT (type_name) DO UPDATE SET type_name = types.type_name RETURNING type_id";
-    private static final String INSERT_INTO_SPECIES_QUERY = "INSERT INTO species (type_id, specie_name) VALUES (?, ?) ON CONFLICT (specie_name) DO UPDATE SET specie_name = species.specie_name RETURNING specie_id";
+    private static final String INSERT_INTO_SPECIES_QUERY = "INSERT INTO species (specie_name) VALUES (?) ON CONFLICT (specie_name) DO UPDATE SET specie_name = species.specie_name RETURNING specie_id";
 
     public Connection getConnection() {
         Connection connection = null;
@@ -170,7 +170,7 @@ public class ManagerDatabase {
                 int typeId = insertTypeAndReturnId(insertTypeStmt, typeName); // Use the dynamically accessed typeName
 
                 // Step 4: Insert into 'species' table and retrieve the specie_id
-                int specieId = insertSpeciesAndReturnId(insertSpeciesStmt, typeId, specieName); // Use dynamic specieName
+                int specieId = insertSpeciesAndReturnId(insertSpeciesStmt, specieName); // Use dynamic specieName
 
                 // Step 5: Insert into the 'cells' table
                 insertCellsStmt.setInt(1, typeId);
@@ -209,9 +209,8 @@ public class ManagerDatabase {
     }
 
     // Helper method for inserting into 'species' table and getting specie_id
-    private static int insertSpeciesAndReturnId(PreparedStatement stmt, int typeId, String specieName) throws SQLException {
-        stmt.setInt(1, typeId);
-        stmt.setString(2, specieName);
+    private static int insertSpeciesAndReturnId(PreparedStatement stmt, String specieName) throws SQLException {
+        stmt.setString(1, specieName);
         ResultSet rs = stmt.executeQuery();
         if (rs.next()) {
             return rs.getInt(1); // Assuming the generated ID is the first column
@@ -226,20 +225,7 @@ public class ManagerDatabase {
         Statement statement = null;
         List<Cell> cells = new ArrayList<>();
         try {
-            String getCellsQuery = "SELECT c.cell_id, s.specie_name, t.type_name, " +
-                    "n.number_nucleolus, r.number_ribosomes, m.number_mitochondrias, " +
-                    "g.number_golgi_apparatus, ct.number_centrosomes, ch.number_chloroplasts, " +
-                    "d.size_mm " +
-                    "FROM cells c " +
-                    "JOIN species s ON c.specie_id = s.specie_id " +
-                    "JOIN types t ON c.type_id = t.type_id " +
-                    "JOIN data d ON c.data_id = d.data_id " +
-                    "JOIN nucleolus n ON d.nucleolus_id = n.nucleolus_id " +
-                    "JOIN ribosomes r ON d.ribosomes_id = r.ribosomes_id " +
-                    "JOIN mitochondria m ON d.mitochondria_id = m.mitochondria_id " +
-                    "JOIN golgi_apparatus g ON d.golgi_apparatus_id = g.golgi_apparatus_id " +
-                    "LEFT JOIN centrosome ct ON d.centrosome_id = ct.centrosome_id " +
-                    "LEFT JOIN chloroplast ch ON d.chloroplast_id = ch.chloroplast_id";
+            String getCellsQuery = "SELECT * FROM cell_view";
 
             statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(getCellsQuery);
