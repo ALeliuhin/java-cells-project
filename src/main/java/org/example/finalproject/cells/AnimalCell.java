@@ -68,8 +68,10 @@ public class AnimalCell extends Cell implements IsCell, IsAnimalCell, Comparable
 
     @Override
     public void maintainHomeostasis(){
-        OutputDevice.writeMessage("\tMaintaining homeostasis...");
+        OutputDevice.writeMessage("\tMaintaining homeostasis: The animal cell regulates its internal environment by controlling factors like temperature, pH, and ion concentrations.");
+        OutputDevice.writeMessage("\tCell processes such as osmoregulation, thermoregulation, and waste removal are essential for homeostasis.");
     }
+
 
     @Override
     public int compareTo(AnimalCell animalCell) {

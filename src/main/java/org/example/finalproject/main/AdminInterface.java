@@ -24,6 +24,7 @@ import java.util.Objects;
 public class AdminInterface extends ClientInterface{
     private Stage adminWindow;
     private Scene adminMainScene;
+    private Cell selectedCell;
 
     public AdminInterface() throws IOException {
         super(new Socket("localhost", Integer.parseInt(Dotenv.load().get("PORT"))), "admin");
@@ -116,7 +117,19 @@ public class AdminInterface extends ClientInterface{
 
         Button experimentsButton = new Button("Experiments");
         experimentsButton.setFont(montserrat);
-        experimentsButton.setOnAction(event -> {});
+        experimentsButton.setOnAction(event -> {
+            try {
+                bufferedWriter.write("/inspect");
+                bufferedWriter.newLine();
+                bufferedWriter.flush();
+
+                List<org.example.finalproject.cells.Cell> cells = (List<Cell>) objectInputStream.readObject();
+                experimentScene(cells);
+            } catch (IOException | ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+        });
+
 
         Button playGameButton = new Button("Play Game");
         playGameButton.setFont(montserrat);
@@ -226,6 +239,132 @@ public class AdminInterface extends ClientInterface{
         inspectWindow.setScene(scene);
         inspectWindow.show();
     }
+
+    public void experimentScene(List<Cell> cells) {
+        // Set up the new stage
+        Stage experimentWindow = new Stage();
+        experimentWindow.setTitle("Experiment on Cells");
+
+        // Create a VBox to hold cell information
+        VBox cellListVBox = new VBox();
+        cellListVBox.setSpacing(20);
+        cellListVBox.setPadding(new Insets(20));
+        cellListVBox.setAlignment(Pos.CENTER); // Center align the cells
+
+        // Add each cell's properties to the VBox
+        for (Cell cell : cells) {
+            double sizeMm = cell.sizeMm;
+            int nucleolus = cell.nucleolus.numberNucleolus;
+            int golgiApparatus = cell.golgiApparatus.numberGolgiApparatus;
+            int ribosomes = cell.ribosomes.numberRibosomes;
+            int mitochondria = cell.mitochondria.numberMitochondrias;
+
+            String speciesName;
+            String cellSpecificInfo;
+
+            if (cell instanceof AnimalCell animalCell) {
+                int centrosomes = animalCell.centrosome.numberCentrosomes;
+                speciesName = animalCell.animalType;
+                cellSpecificInfo = "Centrosomes: " + centrosomes;
+            } else if (cell instanceof PlantCell plantCell) {
+                int chloroplasts = plantCell.chloroplast.numberChloroplasts;
+                speciesName = plantCell.plantType;
+                cellSpecificInfo = "Chloroplasts: " + chloroplasts;
+            } else {
+                speciesName = "Unknown";
+                cellSpecificInfo = "N/A";
+            }
+
+            // Create a Button for each cell's properties
+            Button cellButton = new Button(
+                    "Species: " + speciesName + "\n" +
+                            "Size (mm): " + sizeMm + "\n" +
+                            "Nucleolus: " + nucleolus + "\n" +
+                            "Golgi Apparatus: " + golgiApparatus + "\n" +
+                            "Ribosomes: " + ribosomes + "\n" +
+                            "Mitochondria: " + mitochondria + "\n" +
+                            cellSpecificInfo
+            );
+
+            cellButton.setStyle("-fx-text-fill: #333333; -fx-font-size: 16px; -fx-padding: 10; -fx-background-color: linear-gradient(to bottom, #ffffff, #e0e0e0); -fx-border-color: #cccccc; -fx-border-radius: 10; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.25), 5, 0, 0, 2);");
+            cellButton.setMaxWidth(400);
+            cellButton.setWrapText(true);
+
+            // Click effect: Open new stage with options
+            cellButton.setOnAction(event -> {
+                selectedCell = cell;  // Store the selected cell
+                experimentWindow.close();  // Close current stage
+
+                // Create a new stage for the experiment options
+                Stage optionsWindow = new Stage();
+                optionsWindow.setTitle("Cell Options");
+
+                VBox optionsVBox = new VBox();
+                optionsVBox.setSpacing(20);
+                optionsVBox.setPadding(new Insets(20));
+                optionsVBox.setAlignment(Pos.CENTER);
+
+                Button performEnergyButton = new Button("Obtain Energy");
+                Button synthesizeProteinButton = new Button("Synthesize Protein");
+                Button maintainHomeostasisButton = new Button("Maintain Homeostasis");
+                Button storeStarchButton = new Button("Store Starch");
+
+                // Action depending on the selected cell type
+                if (selectedCell instanceof AnimalCell) {
+                    AnimalCell animalCell = (AnimalCell) selectedCell;
+                    performEnergyButton.setOnAction(e -> animalCell.obtainEnergy());
+                    synthesizeProteinButton.setOnAction(e -> animalCell.synthesizeProtein());
+                    maintainHomeostasisButton.setOnAction(e -> animalCell.maintainHomeostasis());
+                } else if (selectedCell instanceof PlantCell) {
+                    PlantCell plantCell = (PlantCell) selectedCell;
+                    performEnergyButton.setOnAction(e -> plantCell.obtainEnergy());
+                    synthesizeProteinButton.setOnAction(e -> plantCell.synthesizeProtein());
+                    maintainHomeostasisButton.setOnAction(e -> plantCell.performPhotosynthesis());
+                    storeStarchButton.setOnAction(e -> plantCell.storeStarch());
+                }
+
+                optionsVBox.getChildren().addAll(
+                        performEnergyButton,
+                        synthesizeProteinButton,
+                        maintainHomeostasisButton
+                );
+
+                // Add store starch option only for PlantCell
+                if (selectedCell instanceof PlantCell) {
+                    optionsVBox.getChildren().add(storeStarchButton);
+                }
+
+                Scene optionsScene = new Scene(optionsVBox, 300, 200);
+                optionsWindow.setScene(optionsScene);
+                optionsWindow.show();
+            });
+
+            cellListVBox.getChildren().add(cellButton);
+        }
+
+        // Wrap the VBox in a ScrollPane
+        ScrollPane scrollPane = new ScrollPane(cellListVBox);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setPadding(new Insets(20));
+
+        // Layout for the ScrollPane
+        VBox layout = new VBox();
+        layout.setSpacing(20);
+        layout.setPadding(new Insets(20));
+        layout.setAlignment(Pos.CENTER);
+        layout.getChildren().add(scrollPane);
+
+        // Create a Scene for the stage
+        Scene scene = new Scene(layout, 600, 400);
+        scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/org/example/finalproject/Global.css")).toExternalForm());
+
+        // Set the scene and show the stage
+        experimentWindow.setScene(scene);
+        experimentWindow.show();
+    }
+
+
+
 
     public void createCells() {
         // Set up the stage for creating cells

@@ -43,8 +43,9 @@ public class PlantCell extends Cell implements IsCell, IsPlantCell, Comparable<P
 
     @Override
     public void storeStarch() {
-
+        OutputDevice.writeMessage("\tAnimal cells do not store starch. Instead, they store energy in the form of glycogen.");
     }
+
 
     @Override
     public void obtainEnergy() {
