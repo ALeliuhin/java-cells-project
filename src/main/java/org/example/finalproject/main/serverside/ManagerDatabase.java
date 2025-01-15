@@ -149,13 +149,13 @@ public class ManagerDatabase {
                 insertDataStmt.setInt(3, mitochondriaId);
                 insertDataStmt.setInt(4, golgiApparatusId);
                 if (centrosomeId == 0) {
-                    insertDataStmt.setNull(5, java.sql.Types.INTEGER); // Centrosome ID
+                    insertDataStmt.setNull(5, Types.INTEGER); // Centrosome ID
                 } else {
                     insertDataStmt.setInt(5, centrosomeId);
                 }
 
                 if (chloroplastId == 0) {
-                    insertDataStmt.setNull(6, java.sql.Types.INTEGER); // Chloroplast ID
+                    insertDataStmt.setNull(6, Types.INTEGER); // Chloroplast ID
                 } else {
                     insertDataStmt.setInt(6, chloroplastId);
                 }
@@ -218,8 +218,23 @@ public class ManagerDatabase {
         return -1; // Handle case where species already exists and doesn't insert
     }
 
-    //    public static void updateCells(List<Cell> cells){}
-    //    public static void deleteCells(List<Cell> cells){}
+
+    public static void deleteCells(Connection connection, List<Cell> cells) throws SQLException {
+                // Prepare all the required delete statements
+        PreparedStatement getSpecieID = connection.prepareStatement("SELECT specie_id FROM species WHERE species_name = ?");
+        PreparedStatement getDataIDbySize = connection.prepareStatement("SELECT data_id FROM data WHERE size_mm = ?");
+        PreparedStatement getCellID = connection.prepareStatement("SELECT cell_id FROM cells JOIN species ON cells.specie_id = specie.id JOIN data ON cells.data_id = data.data_id");
+        PreparedStatement deleteCellsStmt = connection.prepareStatement("DELETE FROM cells WHERE cell_id = ?");
+        PreparedStatement selectDataIDs = connection.prepareStatement("SELECT * FROM data WHERE data_id = ?");
+        PreparedStatement deleteNucleolus = connection.prepareStatement("DELETE FROM nucleolus WHERE nucleolus_id = ?");
+        PreparedStatement deleteRibosomes = connection.prepareStatement("DELETE FROM ribosomes WHERE ribosomes_id = ?");
+        PreparedStatement deleteMitochondria = connection.prepareStatement("DELETE FROM mitochondria WHERE mitochondria_id = ?");
+        PreparedStatement deleteGolgi = connection.prepareStatement("DELETE FROM golgi_apparatus WHERE golgi_apparatus_id = ?");
+        PreparedStatement deleteChloroplast = connection.prepareStatement("DELETE FROM chloroplast WHERE chloroplast_id = ?");
+        PreparedStatement deleteCentrosome = connection.prepareStatement("DELETE FROM centrosome WHERE centrosome_id = ?");
+    }
+
+
 
     public static List<Cell> getCells(Connection connection) {
         Statement statement = null;

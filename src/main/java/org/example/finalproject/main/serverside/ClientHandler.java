@@ -85,11 +85,11 @@ public class ClientHandler implements Runnable{
                     List<Cell> cells = new ArrayList<>();
                     for (int i = 0; i < numberOfCells; i++) {
                         if(i % 2 == 0){
-                            AnimalCell animalCell = new AnimalCell(InputDevice.getRandomAnimal(), InputDevice.yieldIntNumber(8, 100));
+                            AnimalCell animalCell = new AnimalCell(InputDevice.getRandomAnimal(), InputDevice.yieldDoubleNumber(8, 100));
                             cells.add(animalCell);
                         }
                         else {
-                            PlantCell plantCell = new PlantCell(InputDevice.getRandomPlant(), InputDevice.yieldIntNumber(14, 100));
+                            PlantCell plantCell = new PlantCell(InputDevice.getRandomPlant(), InputDevice.yieldDoubleNumber(14, 100));
                             cells.add(plantCell);
                         }
                     }
@@ -102,6 +102,12 @@ public class ClientHandler implements Runnable{
                     ManagerDatabase.closeConnection(connectionToDb);
                     break;
                 }
+                else if (messageFromClient != null && messageFromClient.equals("/delete")) {
+
+                    List<Cell> cells = ManagerDatabase.getCells(connectionToDb);
+                    ManagerDatabase.deleteCells(connectionToDb, cells); // Call the delete function
+                }
+
                 // parse OP and content
                 // decide how to response
             }
