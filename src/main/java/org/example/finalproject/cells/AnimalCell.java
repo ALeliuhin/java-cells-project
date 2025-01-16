@@ -3,8 +3,10 @@ package org.example.finalproject.cells;
 import org.example.finalproject.iohandler.InputDevice;
 import org.example.finalproject.iohandler.OutputDevice;
 
+import java.io.Serializable;
 
-public class AnimalCell extends Cell implements IsCell, IsAnimalCell, Comparable<AnimalCell>{
+
+public class AnimalCell extends Cell implements IsCell, IsAnimalCell, Comparable<AnimalCell>, Serializable {
     public String animalType;
     public Organelles.Centrosome centrosome;
 
@@ -12,11 +14,6 @@ public class AnimalCell extends Cell implements IsCell, IsAnimalCell, Comparable
     public AnimalCell(String animalType, double sizeMm) {
         this.animalType = animalType;
         this.sizeMm = sizeMm;
-
-        OutputDevice.writeMessage(String.format("The animal cell of type %s was produced. " +
-                        "Size: %.2f mm.",
-                this.animalType, this.sizeMm));
-
         this.nucleolus = new Organelles.Nucleolus();
         this.mitochondria = new Organelles.Mitochondria(InputDevice.yieldIntNumber(100, 2000));
         this.golgiApparatus = new Organelles.GolgiApparatus((byte) InputDevice.yieldIntNumber(1, 10));
@@ -37,6 +34,7 @@ public class AnimalCell extends Cell implements IsCell, IsAnimalCell, Comparable
         this.mitochondria = new Organelles.Mitochondria(numberMitochondria);
         this.golgiApparatus = new Organelles.GolgiApparatus(numberGolgiApparatus);
         this.centrosome = new Organelles.Centrosome();
+        this.nucleolus = new Organelles.Nucleolus();
     }
 
     @Override
@@ -70,8 +68,10 @@ public class AnimalCell extends Cell implements IsCell, IsAnimalCell, Comparable
 
     @Override
     public void maintainHomeostasis(){
-        OutputDevice.writeMessage("\tMaintaining homeostasis...");
+        OutputDevice.writeMessage("\tMaintaining homeostasis: The animal cell regulates its internal environment by controlling factors like temperature, pH, and ion concentrations.");
+        OutputDevice.writeMessage("\tCell processes such as osmoregulation, thermoregulation, and waste removal are essential for homeostasis.");
     }
+
 
     @Override
     public int compareTo(AnimalCell animalCell) {

@@ -1,9 +1,9 @@
 package org.example.finalproject.cells;
 
-import org.example.finalproject.iohandler.OutputDevice;
+import java.io.Serializable;
 
 public class Organelles {
-    public static class Centrosome {
+    public static class Centrosome implements Serializable{
         public int numberCentrosomes;
 
         public Centrosome(){
@@ -11,44 +11,40 @@ public class Organelles {
         }
     }
 
-    public static class Chloroplast {
+    public static class Chloroplast implements Serializable{
         public int numberChloroplasts;
 
         public Chloroplast(int numberChloroplasts) {
             this.numberChloroplasts = numberChloroplasts;
-            OutputDevice.writeMessage("\tChloroplasts: " + numberChloroplasts);
         }
     }
 
-    public static class GolgiApparatus {
+    public static class GolgiApparatus implements Serializable{
         public int numberGolgiApparatus;
 
         public GolgiApparatus(int numberGolgiApparatus) {
             this.numberGolgiApparatus = numberGolgiApparatus;
-            OutputDevice.writeMessage("\tGolgi apparatus: " + numberGolgiApparatus);
         }
     }
 
-    public static class Mitochondria {
+    public static class Mitochondria implements Serializable{
         public int numberMitochondrias;
 
         public Mitochondria(int numberMitochondrias) {
             this.numberMitochondrias = numberMitochondrias;
-            OutputDevice.writeMessage("\tMitochondrias: " + numberMitochondrias);
         }
 
     }
 
-    public static class Ribosome {
+    public static class Ribosome implements Serializable{
         public int numberRibosomes;
 
         public Ribosome(int numberRibosomes) {
             this.numberRibosomes = numberRibosomes;
-            OutputDevice.writeMessage("\tRibosomes: " + numberRibosomes);
         }
     }
 
-    public static class Nucleolus {
+    public static class Nucleolus implements Serializable{
         public int numberNucleolus;
 
         public Nucleolus() {

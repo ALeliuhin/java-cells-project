@@ -3,18 +3,15 @@ package org.example.finalproject.cells;
 import org.example.finalproject.iohandler.InputDevice;
 import org.example.finalproject.iohandler.OutputDevice;
 
-public class PlantCell extends Cell implements IsCell, IsPlantCell, Comparable<PlantCell> {
+import java.io.Serializable;
+
+public class PlantCell extends Cell implements IsCell, IsPlantCell, Comparable<PlantCell>, Serializable {
     public String plantType;
     public Organelles.Chloroplast chloroplast;
 
     public PlantCell(String plantType, double sizeMm){
         this.plantType = plantType;
         this.sizeMm = sizeMm;
-
-        OutputDevice.writeMessage(String.format("The plant cell of type %s was produced. " +
-                        "Size: %.2f mm.",
-                        this.plantType, this.sizeMm));
-
         this.nucleolus = new Organelles.Nucleolus();
         this.mitochondria = new Organelles.Mitochondria(InputDevice.yieldIntNumber(10, 100));
         this.golgiApparatus = new Organelles.GolgiApparatus((byte) InputDevice.yieldIntNumber(1, 10));
@@ -31,6 +28,7 @@ public class PlantCell extends Cell implements IsCell, IsPlantCell, Comparable<P
         this.mitochondria = new Organelles.Mitochondria(numberMitochondria);
         this.golgiApparatus = new Organelles.GolgiApparatus(numberGolgiApparatus);
         this.chloroplast = new Organelles.Chloroplast(numberChloroplasts);
+        this.nucleolus = new Organelles.Nucleolus();
     }
 
 
@@ -45,8 +43,9 @@ public class PlantCell extends Cell implements IsCell, IsPlantCell, Comparable<P
 
     @Override
     public void storeStarch() {
-
+        OutputDevice.writeMessage("\tAnimal cells do not store starch. Instead, they store energy in the form of glycogen.");
     }
+
 
     @Override
     public void obtainEnergy() {
