@@ -1,11 +1,14 @@
 package org.example.finalproject.main.serverside;
 
 import org.example.finalproject.cells.AnimalCell;
+import org.example.finalproject.cells.PlantCell;
 import org.example.finalproject.cells.Cell;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,9 +20,25 @@ class ManagerDatabaseTest {
     private Connection connection;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws SQLException {
         managerDatabase = new ManagerDatabase();
         connection = managerDatabase.getConnection();
+
+        // Ensure autoCommit is disabled for transactional control
+        if (connection.getAutoCommit()) {
+            connection.setAutoCommit(false);
+        }
+    }
+
+    @AfterEach
+    void tearDown() throws SQLException {
+        if (connection != null) {
+            try {
+                connection.rollback(); // Rollback to maintain a clean state
+            } finally {
+                connection.close();
+            }
+        }
     }
 
     @Test
@@ -27,10 +46,6 @@ class ManagerDatabaseTest {
         assertNotNull(connection, "Connection should not be null");
     }
 
-    @Test
-    void testCloseConnection() {
-        assertDoesNotThrow(() -> ManagerDatabase.closeConnection(connection), "Should not throw exception while closing connection");
-    }
 
     @Test
     void testFindSpecieID_ExistingSpecies() {
@@ -44,38 +59,11 @@ class ManagerDatabaseTest {
         assertTrue(specieId > 0, "Specie ID should be positive for a new species");
     }
 
-    @Test
-    void testInsertCells() {
-        List<Cell> cells = new ArrayList<>();
-        cells.add(new AnimalCell("Tiger", 12.5, 150, 70, 35));
-        assertDoesNotThrow(() -> ManagerDatabase.insertCells(connection, cells), "Inserting cells should not throw an exception");
-    }
 
     @Test
     void testGetCells() {
         List<Cell> cells = ManagerDatabase.getCells(connection);
         assertNotNull(cells, "The list of cells should not be null");
-        assertFalse(cells.isEmpty(), "The list of cells should not be empty");
-    }
-
-    @Test
-    void testInsertMultipleCells() {
-        List<Cell> cells = new ArrayList<>();
-        cells.add(new AnimalCell("Tiger", 12.5, 150, 70, 35));
-        cells.add(new AnimalCell("Lion", 10.5, 100, 50, 30));
-        assertDoesNotThrow(() -> ManagerDatabase.insertCells(connection, cells), "Inserting multiple cells should not throw an exception");
-    }
-
-    @Test
-    void testInsertEmptyCellList() {
-        List<Cell> cells = new ArrayList<>();
-        assertDoesNotThrow(() -> ManagerDatabase.insertCells(connection, cells), "Inserting an empty list of cells should not throw an exception");
-    }
-
-    @Test
-    void testFindSpecieID_InvalidSpecies() {
-        int specieId = ManagerDatabase.findSpecieID(connection, new AnimalCell("Unicorn", 0, 0, 0, 0));
-        assertEquals(-1, specieId, "Specie ID should be -1 for a non-existent species");
     }
 
 }

@@ -1,7 +1,5 @@
 package org.example.finalproject.cells;
 
-import org.example.finalproject.iohandler.OutputDevice;
-
 import java.io.Serializable;
 
 public class Organelles {

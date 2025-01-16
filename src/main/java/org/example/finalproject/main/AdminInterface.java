@@ -18,7 +18,9 @@ import org.example.finalproject.main.exceptions.ServerUnreached;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 public class AdminInterface extends ClientInterface{
@@ -232,7 +234,7 @@ public class AdminInterface extends ClientInterface{
         layout.getChildren().addAll(scrollPane, backButton);
 
         // Create a Scene for the stage
-        Scene scene = new Scene(layout, 600, 400);
+        Scene scene = new Scene(layout, 800, 600);
         scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/org/example/finalproject/Global.css")).toExternalForm());
 
         // Set the scene and show the stage
@@ -290,80 +292,167 @@ public class AdminInterface extends ClientInterface{
             cellButton.setMaxWidth(400);
             cellButton.setWrapText(true);
 
-            // Click effect: Open new stage with options
             cellButton.setOnAction(event -> {
-                selectedCell = cell;  // Store the selected cell
-                experimentWindow.close();  // Close current stage
+                selectedCell = cell;
+                experimentWindow.close();
 
-                // Create a new stage for the experiment options
                 Stage optionsWindow = new Stage();
                 optionsWindow.setTitle("Cell Options");
 
-                VBox optionsVBox = new VBox();
-                optionsVBox.setSpacing(20);
-                optionsVBox.setPadding(new Insets(20));
-                optionsVBox.setAlignment(Pos.CENTER);
+                // VBox for cell information
+                VBox cellInfoBox = new VBox();
+                cellInfoBox.setSpacing(10);
+                cellInfoBox.setPadding(new Insets(20));
+                cellInfoBox.setAlignment(Pos.TOP_LEFT);
+
+                Label cellInfoLabel = new Label(
+                        "Selected Cell:\n" +
+                                "Size (mm): " + cell.sizeMm + "\n" +
+                                "Nucleolus: " + cell.nucleolus.numberNucleolus + "\n" +
+                                "Golgi Apparatus: " + cell.golgiApparatus.numberGolgiApparatus + "\n" +
+                                "Ribosomes: " + cell.ribosomes.numberRibosomes + "\n" +
+                                "Mitochondria: " + cell.mitochondria.numberMitochondrias
+                );
+
+                // Add type-specific information
+                if (cell instanceof AnimalCell animalCell) {
+                    cellInfoLabel.setText(cellInfoLabel.getText() + "\nCentrosomes: " + animalCell.centrosome.numberCentrosomes);
+                } else if (cell instanceof PlantCell plantCell) {
+                    cellInfoLabel.setText(cellInfoLabel.getText() + "\nChloroplasts: " + plantCell.chloroplast.numberChloroplasts);
+                }
+
+                cellInfoLabel.setStyle("-fx-font-size: 14px; -fx-text-fill: #333333;");
+
+                cellInfoBox.getChildren().add(cellInfoLabel);
+
+                // VBox for action buttons
+                VBox buttonBox = new VBox();
+                buttonBox.setSpacing(20);
+                buttonBox.setPadding(new Insets(20));
+                buttonBox.setAlignment(Pos.CENTER);
 
                 Button performEnergyButton = new Button("Obtain Energy");
                 Button synthesizeProteinButton = new Button("Synthesize Protein");
                 Button maintainHomeostasisButton = new Button("Maintain Homeostasis");
                 Button storeStarchButton = new Button("Store Starch");
 
-                // Action depending on the selected cell type
                 if (selectedCell instanceof AnimalCell) {
                     AnimalCell animalCell = (AnimalCell) selectedCell;
                     performEnergyButton.setOnAction(e -> animalCell.obtainEnergy());
-                    synthesizeProteinButton.setOnAction(e -> animalCell.synthesizeProtein());
+                    Map<Cell, Integer> synthesisCountMap = new HashMap<>();
+
+                    synthesizeProteinButton.setOnAction(e -> {
+                        int currentCount = synthesisCountMap.getOrDefault(selectedCell, 0);
+
+                        int newCount = currentCount + 1;
+                        synthesisCountMap.put(selectedCell, newCount);
+
+                        // Perform the protein synthesis action
+                        ((AnimalCell) selectedCell).synthesizeProtein();
+
+                        // Check if count reaches the threshold
+                        if (newCount >= 3) {
+                            // Send the `/delete` command to the server
+                            try {
+                                bufferedWriter.write("/delete");
+                                bufferedWriter.newLine();
+                                bufferedWriter.flush();
+
+                                // Send the selected cell object to the server
+                                objectOutputStream.writeObject(selectedCell);
+                                objectOutputStream.flush();
+
+                                // Reset the count for this cell (optional if deletion is permanent)
+                                synthesisCountMap.remove(selectedCell);
+
+                                System.out.println("Cell deleted: " + selectedCell);
+                            } catch (IOException ex) {
+                                ex.printStackTrace();
+                            }
+                        }
+                    });
+
                     maintainHomeostasisButton.setOnAction(e -> animalCell.maintainHomeostasis());
                 } else if (selectedCell instanceof PlantCell) {
                     PlantCell plantCell = (PlantCell) selectedCell;
                     performEnergyButton.setOnAction(e -> plantCell.obtainEnergy());
-                    synthesizeProteinButton.setOnAction(e -> plantCell.synthesizeProtein());
+                    // Map to track synthesis counts for each cell
+                    Map<Cell, Integer> synthesisCountMap = new HashMap<>();
+
+                    synthesizeProteinButton.setOnAction(e -> {
+                        int currentCount = synthesisCountMap.getOrDefault(selectedCell, 0);
+
+                        int newCount = currentCount + 1;
+                        synthesisCountMap.put(selectedCell, newCount);
+
+                        ((PlantCell) selectedCell).synthesizeProtein();
+
+                        if (newCount >= 3) {
+                            // Send the `/delete` command to the server
+                            try {
+                                bufferedWriter.write("/delete");
+                                bufferedWriter.newLine();
+                                bufferedWriter.flush();
+
+                                // Send the selected cell object to the server
+                                objectOutputStream.writeObject(selectedCell);
+                                objectOutputStream.flush();
+
+                                // Reset the count for this cell (optional if deletion is permanent)
+                                synthesisCountMap.remove(selectedCell);
+
+                                System.out.println("Cell deleted: " + selectedCell);
+                            } catch (IOException ex) {
+                                ex.printStackTrace();
+                            }
+                        }
+                    });
+
                     maintainHomeostasisButton.setOnAction(e -> plantCell.performPhotosynthesis());
                     storeStarchButton.setOnAction(e -> plantCell.storeStarch());
                 }
 
-                optionsVBox.getChildren().addAll(
+                buttonBox.getChildren().addAll(
                         performEnergyButton,
                         synthesizeProteinButton,
                         maintainHomeostasisButton
                 );
 
-                // Add store starch option only for PlantCell
                 if (selectedCell instanceof PlantCell) {
-                    optionsVBox.getChildren().add(storeStarchButton);
+                    buttonBox.getChildren().add(storeStarchButton);
                 }
 
-                Scene optionsScene = new Scene(optionsVBox, 300, 200);
+                BorderPane borderPane = new BorderPane();
+                borderPane.setTop(cellInfoBox);
+                borderPane.setCenter(buttonBox);
+
+                Scene optionsScene = new Scene(borderPane, 800, 600);
+                optionsScene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/org/example/finalproject/Global.css")).toExternalForm());
+
                 optionsWindow.setScene(optionsScene);
                 optionsWindow.show();
             });
 
+
             cellListVBox.getChildren().add(cellButton);
         }
 
-        // Wrap the VBox in a ScrollPane
         ScrollPane scrollPane = new ScrollPane(cellListVBox);
         scrollPane.setFitToWidth(true);
         scrollPane.setPadding(new Insets(20));
 
-        // Layout for the ScrollPane
         VBox layout = new VBox();
         layout.setSpacing(20);
         layout.setPadding(new Insets(20));
         layout.setAlignment(Pos.CENTER);
         layout.getChildren().add(scrollPane);
 
-        // Create a Scene for the stage
-        Scene scene = new Scene(layout, 600, 400);
+        Scene scene = new Scene(layout, 800, 600);
         scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/org/example/finalproject/Global.css")).toExternalForm());
 
-        // Set the scene and show the stage
         experimentWindow.setScene(scene);
         experimentWindow.show();
     }
-
-
 
 
     public void createCells() {
