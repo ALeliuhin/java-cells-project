@@ -1,7 +1,6 @@
 package org.example.finalproject.main.serverside;
 
 import io.github.cdimascio.dotenv.Dotenv;
-import javafx.scene.control.TableColumn;
 import org.example.finalproject.cells.AnimalCell;
 import org.example.finalproject.cells.Cell;
 import org.example.finalproject.cells.PlantCell;
@@ -86,7 +85,6 @@ public class ManagerDatabase {
         } catch (SQLException e) {
             throw new RuntimeException("Error accessing species data", e);
         } finally {
-            // Close resources to avoid memory leaks
             try {
                 if (resultSet != null) {
                     resultSet.close();
@@ -99,7 +97,7 @@ public class ManagerDatabase {
             }
         }
 
-        return -1; // Return -1 if no specie_id is found or inserted
+        return -1;
     }
 
 
@@ -120,7 +118,6 @@ public class ManagerDatabase {
             connection.setAutoCommit(false); // Start transaction
 
             for (Cell cell : cells) {
-                // Step 1: Insert data and retrieve generated keys for each part (nucleolus, ribosomes, mitochondria, etc.)
                 int nucleolusId = insertDataAndReturnId(insertNucleolusStmt, cell.nucleolus.numberNucleolus);
                 int ribosomeId = insertDataAndReturnId(insertRibosomeStmt, cell.ribosomes.numberRibosomes);
                 int mitochondriaId = insertDataAndReturnId(insertMitochondriaStmt, cell.mitochondria.numberMitochondrias);
@@ -166,13 +163,10 @@ public class ManagerDatabase {
                 rsData.next();
                 int dataId = rsData.getInt("data_id");
 
-                // Step 3: Insert into 'types' table and retrieve the type_id
-                int typeId = insertTypeAndReturnId(insertTypeStmt, typeName); // Use the dynamically accessed typeName
+                int typeId = insertTypeAndReturnId(insertTypeStmt, typeName);
 
-                // Step 4: Insert into 'species' table and retrieve the specie_id
-                int specieId = insertSpeciesAndReturnId(insertSpeciesStmt, specieName); // Use dynamic specieName
+                int specieId = insertSpeciesAndReturnId(insertSpeciesStmt, specieName);
 
-                // Step 5: Insert into the 'cells' table
                 insertCellsStmt.setInt(1, typeId);
                 insertCellsStmt.setInt(2, specieId);
                 insertCellsStmt.setInt(3, dataId);
@@ -184,38 +178,35 @@ public class ManagerDatabase {
             connection.rollback(); // Rollback transaction on error
             throw new RuntimeException("Error inserting cells", e);
         } finally {
-            connection.setAutoCommit(true); // Restore auto-commit behavior
+            connection.setAutoCommit(true);
         }
     }
 
-    // Helper method for inserting data and returning generated IDs
     private static int insertDataAndReturnId(PreparedStatement stmt, int number) throws SQLException {
         stmt.setInt(1, number);
         ResultSet rs = stmt.executeQuery();
         if(rs.next()) {
-            return rs.getInt(1); // Assuming the generated ID is the first column
+            return rs.getInt(1);
         }
         return -1;
     }
 
-    // Helper method for inserting into 'types' table and getting type_id
     private static int insertTypeAndReturnId(PreparedStatement stmt, String typeName) throws SQLException {
         stmt.setString(1, typeName);
         ResultSet rs = stmt.executeQuery();
         if (rs.next()) {
-            return rs.getInt(1); // Assuming the generated ID is the first column
+            return rs.getInt(1);
         }
-        return -1; // Handle case where type already exists and doesn't insert
+        return -1;
     }
 
-    // Helper method for inserting into 'species' table and getting specie_id
     private static int insertSpeciesAndReturnId(PreparedStatement stmt, String specieName) throws SQLException {
         stmt.setString(1, specieName);
         ResultSet rs = stmt.executeQuery();
         if (rs.next()) {
-            return rs.getInt(1); // Assuming the generated ID is the first column
+            return rs.getInt(1);
         }
-        return -1; // Handle case where species already exists and doesn't insert
+        return -1;
     }
 
 
@@ -246,7 +237,6 @@ public class ManagerDatabase {
             ResultSet resultSet = statement.executeQuery(getCellsQuery);
 
             while (resultSet.next()) {
-                // Retrieve values from the result set
                 int cellId = resultSet.getInt("cell_id");
                 String speciesName = resultSet.getString("specie_name");
                 String typeName = resultSet.getString("type_name");
@@ -258,7 +248,6 @@ public class ManagerDatabase {
                 int numberChloroplasts = resultSet.getInt("number_chloroplasts");
                 double sizeMm = resultSet.getDouble("size_mm");
 
-                // Create a Cell based on typeName
                 if (typeName.equals("Animal")) {
                     AnimalCell animalCell = new AnimalCell(speciesName, sizeMm, numberRibosomes, numberMitochondria, numberGolgiApparatus);
                     cells.add(animalCell);

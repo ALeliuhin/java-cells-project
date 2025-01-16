@@ -292,12 +292,10 @@ public class AdminInterface extends ClientInterface{
             cellButton.setMaxWidth(400);
             cellButton.setWrapText(true);
 
-            // Click effect: Open new stage with options
             cellButton.setOnAction(event -> {
-                selectedCell = cell;  // Store the selected cell
-                experimentWindow.close();  // Close the current stage
+                selectedCell = cell;
+                experimentWindow.close();
 
-                // Create a new stage for the experiment options
                 Stage optionsWindow = new Stage();
                 optionsWindow.setTitle("Cell Options");
 
@@ -338,18 +336,14 @@ public class AdminInterface extends ClientInterface{
                 Button maintainHomeostasisButton = new Button("Maintain Homeostasis");
                 Button storeStarchButton = new Button("Store Starch");
 
-                // Action depending on the selected cell type
                 if (selectedCell instanceof AnimalCell) {
                     AnimalCell animalCell = (AnimalCell) selectedCell;
                     performEnergyButton.setOnAction(e -> animalCell.obtainEnergy());
-                    // Map to track synthesis counts for each cell
                     Map<Cell, Integer> synthesisCountMap = new HashMap<>();
 
                     synthesizeProteinButton.setOnAction(e -> {
-                        // Get the current count for this cell (default to 0 if not present)
                         int currentCount = synthesisCountMap.getOrDefault(selectedCell, 0);
 
-                        // Increment the count
                         int newCount = currentCount + 1;
                         synthesisCountMap.put(selectedCell, newCount);
 
@@ -386,17 +380,13 @@ public class AdminInterface extends ClientInterface{
                     Map<Cell, Integer> synthesisCountMap = new HashMap<>();
 
                     synthesizeProteinButton.setOnAction(e -> {
-                        // Get the current count for this cell (default to 0 if not present)
                         int currentCount = synthesisCountMap.getOrDefault(selectedCell, 0);
 
-                        // Increment the count
                         int newCount = currentCount + 1;
                         synthesisCountMap.put(selectedCell, newCount);
 
-                        // Perform the protein synthesis action
                         ((PlantCell) selectedCell).synthesizeProtein();
 
-                        // Check if count reaches the threshold
                         if (newCount >= 3) {
                             // Send the `/delete` command to the server
                             try {
@@ -428,12 +418,10 @@ public class AdminInterface extends ClientInterface{
                         maintainHomeostasisButton
                 );
 
-                // Add store starch option only for PlantCell
                 if (selectedCell instanceof PlantCell) {
                     buttonBox.getChildren().add(storeStarchButton);
                 }
 
-                // Use a BorderPane for better layout organization
                 BorderPane borderPane = new BorderPane();
                 borderPane.setTop(cellInfoBox);
                 borderPane.setCenter(buttonBox);
@@ -449,23 +437,19 @@ public class AdminInterface extends ClientInterface{
             cellListVBox.getChildren().add(cellButton);
         }
 
-        // Wrap the VBox in a ScrollPane
         ScrollPane scrollPane = new ScrollPane(cellListVBox);
         scrollPane.setFitToWidth(true);
         scrollPane.setPadding(new Insets(20));
 
-        // Layout for the ScrollPane
         VBox layout = new VBox();
         layout.setSpacing(20);
         layout.setPadding(new Insets(20));
         layout.setAlignment(Pos.CENTER);
         layout.getChildren().add(scrollPane);
 
-        // Create a Scene for the stage
         Scene scene = new Scene(layout, 800, 600);
         scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/org/example/finalproject/Global.css")).toExternalForm());
 
-        // Set the scene and show the stage
         experimentWindow.setScene(scene);
         experimentWindow.show();
     }
